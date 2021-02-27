@@ -1,0 +1,33 @@
+{
+  "name": "discordvoiceassistant",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quentinmay/discord-voice-assistant.git"
+  },
+  "author": "Quentin May",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quentinmay/discord-voice-assistant/issues"
+  },
+  "homepage": "https://github.com/quentinmay/discord-voice-assistant#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "js-video-url-parser": "^0.4.3",
+    "opusscript": "0.0.8",
+    "replace-ext": "^2.0.0",
+    "spotify-uri": "^2.1.0",
+    "spotify-web-api-node": "^5.0.2",
+    "string-similarity": "^4.0.4",
+    "wav": "^1.0.2",
+    "words-to-numbers": "^1.5.1",
+    "youtube-playlist-info": "^1.1.2",
+    "ytdl-core": "^4.5.0",
+    "ytsr": "^3.3.1"
+  }
+}

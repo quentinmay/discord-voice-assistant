@@ -120,14 +120,16 @@ Removes old temp data of recordings that aren't necessary anymore. Default time 
 */
 function deleteOldAudio() {
     fs.readdir("./voicedata/", (err, files) => {
+        if (err) console.log(err);
         files.forEach(file => {
+            try {
             if (Date.now() - file.split("-")[0] > 60000) {
-                try {
+         
                         fs.unlink(`./voicedata/${file}`, (err) => {
                     });
-                } catch (err) {
+                
                 }
-
+            } catch (err) {
 
             }
         });
@@ -140,8 +142,8 @@ function deleteOldAudio() {
 Sets discord bot user activity. (My sample uses STREAMING so his icon is purple.)
 */
 function setStatus() {
-    client.user.setActivity(config.satusActivity, {
-        type: config.satusType,
+    client.user.setActivity(config.statusActivity, {
+        type: config.statusType,
         url: config.statusURL
     }).catch(console.error);
 }
@@ -236,12 +238,16 @@ client.on('message', (msg) => {
 
                 break;
             case 'spotify':
-                if (!msg.member.voice.channel) {
+                if (config.spotifyClientID && config.spotifyClientSecret) {
+                    if (!msg.member.voice.channel) {
 
-                    msg.channel.send("`Must be in a voice channel to use this command.`");
+                        msg.channel.send("`Must be in a voice channel to use this command.`");
+                    } else {
+                        voiceChannel = msg.member.voice.channel;
+                        spotifyGenreList(msg.channel, contents, msg.member);
+                    }
                 } else {
-                    voiceChannel = msg.member.voice.channel;
-                    spotifyGenreList(msg.channel, contents, msg.member);
+                    console.log("spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.");
                 }
                 break;
             case 'volume':
@@ -761,10 +767,6 @@ function botAfkTimer() {
 //if message is valid link, get youtube info
 //else do youtube search query and get youtube info for first
 //after either, add to queue
-
-
-
-
 function commandPlay(member, cmd, content, top) {
 
     try {
@@ -943,6 +945,7 @@ async function searchYoutube(author, content, top) {
 
 function spotifyPlaylistOrAlbum(id, type, author) {
 
+    try {
     spotifyApi.clientCredentialsGrant().then(
         function (data) {
             console.log('The access token expires in ' + data.body['expires_in']);
@@ -1011,6 +1014,9 @@ function spotifyPlaylistOrAlbum(id, type, author) {
         function (err) {
             console.log('Something went wrong when retrieving an access token', err);
         });
+    } catch(err) {
+        console.log(err);
+    }
 }
 
 function add_to_queue(video, top, playlist) {
@@ -1123,11 +1129,6 @@ function playMusic() {
     }
     //check to see if dispatcher voice connection exists if not, make new one
     //if (!seek) seek = 0;
-
-
-
-
-
 
 }
 
@@ -1376,29 +1377,32 @@ function voiceCommandHandler(author, rawString) {
             commandPlay(author, 'playtop', contents, true);
             break;
         case "playlist":
-            if (contents.trim() != '') {
-                var genre = contents.trim();
-                getSpotifyList().then(function (genreList) {
-                    console.log(genreList);
-                    var names = [];
-                    for (item of genreList.fields) {
-                        names.push(item.name);
-                    }
+            if (config.spotifyClientID && config.spotifyClientSecret) {
+                if (contents.trim() != '') {
+                    var genre = contents.trim();
+                    getSpotifyList().then(function (genreList) {
+                        console.log(genreList);
+                        var names = [];
+                        for (item of genreList.fields) {
+                            names.push(item.name);
+                        }
 
-                    var matches = stringSimilarity.findBestMatch(genre, names);
-                    if (matches.bestMatch.rating < .7) {
-                        console.log("None close found")
-                    } else {
-                        //console.log(matches.bestMatchIndex + ":" + matches.bestMatch.target);
-                        spotifyGenreList(textChannel, (matches.bestMatchIndex + 1) + " 1", author);
-                    }
-                });
+                        var matches = stringSimilarity.findBestMatch(genre, names);
+                        if (matches.bestMatch.rating < .7) {
+                            console.log("None close found")
+                        } else {
+                            //console.log(matches.bestMatchIndex + ":" + matches.bestMatch.target);
+                            spotifyGenreList(textChannel, (matches.bestMatchIndex + 1) + " 1", author);
+                        }
+                    });
+                }
+            } else {
+                console.log("spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.");
             }
 
             break;
         case "pause":
             song_pause();
-
             break;
         case "stop":
             break;

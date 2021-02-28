@@ -5,7 +5,8 @@ Discord Voice Assistant is a Discord Bot built using [discord.js](https://discor
 ## ⚠Requirements
 1. [Discord Bot Token](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot)
 2. [Node.js 14.0.0 or newer](https://nodejs.org/)
-3. [Python Speech Recognition](https://pypi.org/project/SpeechRecognition)
+3. [Python 2.7.18](https://docs.python.org/release/2.7.18/)
+4. [Python Speech Recognition](https://pypi.org/project/SpeechRecognition)
 
 ## ⚡Installation
 

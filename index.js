@@ -10,7 +10,7 @@ const ytsr = require('ytsr');
 var stringSimilarity = require('string-similarity');
 
 const ytdl = require('ytdl-core');
-const ypi = require('youtube-playlist-info');
+const ytfps = require('ytfps');
 const urlParser = require('js-video-url-parser')
 const wordsToNumbers = require('words-to-numbers');
 
@@ -767,6 +767,7 @@ function botAfkTimer() {
 //if message is valid link, get youtube info
 //else do youtube search query and get youtube info for first
 //after either, add to queue
+
 function commandPlay(member, cmd, content, top) {
 
     try {
@@ -843,45 +844,31 @@ async function searchYoutube(author, content, top) {
             }
         } else if ((urlParser.parse(content)).mediaType == 'playlist') {
             console.log('going for ' + (urlParser.parse(content)).list);
-            ypi(config.youtubeAPIKey, (urlParser.parse(content)).list).then(items => {
-                console.log(items);
+            
+            ytfps((urlParser.parse(content)).list).then(items => {
+                // console.log(items);
                 textChannel.send('`Adding playlist to queue.`');
-                textChannel.send("`" + items.length + " songs from playlist added to queue.`");
+                textChannel.send("`" + items.videos.length + " songs from playlist added to queue.`");
 
-                var list = '';
-                items.forEach(item => {
-                    if (item.title == 'Private video' && item.description == 'This video is private.') {
+                item.videos.forEach(item => {
+                    if (item.title == 'Private video') {
                         return;
                     }
                     var thumbnailURL = 'https://awmaa.com/wp-content/uploads/2017/04/default-image.jpg'
-                    if (item.thumbnails) {
-                        if (item.thumbnails.maxres) {
-                            if (item.thumbnails.maxres.url) {
-                                thumbnailURL = item.thumbnails.maxres.url;
-                            }
-                        } else if (item.thumbnails.standard) {
-                            thumbnailURL = item.thumbnails.standard.url;
-                        } else if (item.thumbnails.high) {
-                            thumbnailURL = item.thumbnails.high.url;
-                        } else if (item.thumbnails.medium) {
-                            thumbnailURL = item.thumbnails.medium.url;
-                        } else if (item.thumbnails.default) {
-                            thumbnailURL = item.thumbnails.default.url;
-                        }
-
-                    }
-                    if (thumbnailURL == 'https://awmaa.com/wp-content/uploads/2017/04/default-image.jpg') {}
+                    if (item.thumbnail_url) thumbnailURL = item.thumbnail_url;
                     var video = {
-                        URL: `https://www.youtube.com/watch?v=${item.resourceId.videoId}`,
+                        URL: `https://www.youtube.com/watch?v=${item.id}`,
                         TITLE: item.title,
-                        DURATION: 0,
+                        DURATION: parseInt(item.milis_length / 1000),
                         THUMBNAIL: thumbnailURL,
                         MEMBER: author
                     };
                     add_to_queue(video, top, true);
                 })
 
-            }).catch(err => errorFindingVideo(err));
+            }).catch(err => {
+                throw err;
+            });
         }
 
     } else if (content.indexOf('spotify') != -1) {
@@ -1130,12 +1117,18 @@ function playMusic() {
     //check to see if dispatcher voice connection exists if not, make new one
     //if (!seek) seek = 0;
 
+
+
+
+
+
 }
 
 function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is NEVER going to run because you have to use .size//////////////////////////////////////////////////////////////////////////////////
     const streamOptions = {
         seek: 0
     }; //, volume: volume};
+    console.log(url);
     musicStream = ytdl(url, {
         filter: 'audioonly'
     });

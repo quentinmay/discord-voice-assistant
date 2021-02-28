@@ -26,8 +26,8 @@
     "string-similarity": "^4.0.4",
     "wav": "^1.0.2",
     "words-to-numbers": "^1.5.1",
-    "youtube-playlist-info": "^1.1.2",
     "ytdl-core": "^4.5.0",
+    "ytfps": "^1.0.4",
     "ytsr": "^3.3.1"
   }
 }

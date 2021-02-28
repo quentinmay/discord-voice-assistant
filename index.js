@@ -5,13 +5,12 @@ var FileWriter = require('wav').FileWriter;
 var replaceExt = require('replace-ext');
 
 const ytsr = require('ytsr');
-
-
-var stringSimilarity = require('string-similarity');
-
 const ytdl = require('ytdl-core');
 const ytfps = require('ytfps');
 const urlParser = require('js-video-url-parser')
+
+
+var stringSimilarity = require('string-similarity');
 const wordsToNumbers = require('words-to-numbers');
 
 
@@ -793,64 +792,37 @@ async function searchYoutube(author, content, top) {
 
     console.log(urlParser.parse(content));
     if (urlParser.parse(content)) {
-        if ((urlParser.parse(content)).mediaType == 'video' && (urlParser.parse(content)).provider == 'youtube') {
+        //Checks to see if its a video, on youtube, and IS NOT a playlist
+        if ((urlParser.parse(content)).mediaType == 'video' && (urlParser.parse(content)).provider == 'youtube' &&  !(urlParser.parse(content)).list) {
             console.log('valid youtube url');
+            
             if (content.indexOf("start_radio") == -1) {
-                var filters = await ytsr.getFilters((urlParser.parse(content)).id);
-                var filter = filters.get('Type').get('Video');
-                    var options = {
-                        limit: 5,
-                        nextpageRef: filter.ref,
-                    }
-                    var searchResults = await ytsr(urlParser.parse(content).id, options);
-                        const videos = searchResults.items;
-                        for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
-                            if (videos[i].duration) {
-                                video = videos[i];
-                                break;
-                            }
-                        }
-                        if (video == null) {
-                            console.log('No video found.');
-                            throw new Error("No video found")
-                        }
-                        var hours = 0;
-                        var minutes = 0;
-                        var seconds = 0;
-                        var durationArray = video.duration.split(':');
-                        if (durationArray.length == 2) { //minutes:seconds
-                            minutes = durationArray[0];
-                            seconds = durationArray[1];
-
-                        } else if (durationArray.length == 3) { //hours:minutes:seconds
-                            hours = durationArray[0];
-                            minutes = durationArray[1];
-                            seconds = durationArray[2];
-
-                        }
-                        var durationSeconds = (hours * 3600) + (minutes * 60) + (seconds * 1); //duration in seconds
-                        var chosenVideo;
-                        console.log(video);
-                        chosenVideo = {
-                            URL: video.link,
-                            TITLE: video.title,
-                            DURATION: durationSeconds,
-                            THUMBNAIL: video.thumbnail,
-                            MEMBER: author
-                        };
-                        add_to_queue(chosenVideo, top, false)
+                var video = await ytdl.getBasicInfo(content);
                 
-
+                var chosenVideo;
+                //console.log(video);
+                chosenVideo = {
+                    URL: content,
+                    TITLE: video.videoDetails.title,
+                    DURATION: video.videoDetails.lengthSeconds,
+                    THUMBNAIL: video.videoDetails.thumbnails[0].url,
+                    MEMBER: author
+                }
+                add_to_queue(chosenVideo, top, false)
+                
+                
+            
             }
-        } else if ((urlParser.parse(content)).mediaType == 'playlist') {
+            //If its not a video, then check if its youtube and IS a list
+        } else if ((urlParser.parse(content)).provider == 'youtube' &&  (urlParser.parse(content)).list) {
             console.log('going for ' + (urlParser.parse(content)).list);
             
             ytfps((urlParser.parse(content)).list).then(items => {
-                // console.log(items);
+                
                 textChannel.send('`Adding playlist to queue.`');
                 textChannel.send("`" + items.videos.length + " songs from playlist added to queue.`");
 
-                item.videos.forEach(item => {
+                items.videos.forEach(item => {
                     if (item.title == 'Private video') {
                         return;
                     }
@@ -1046,26 +1018,25 @@ function add_to_queue(video, top, playlist) {
 
 }
 
-function playMusic() {
+async function playMusic() {
     if (queue.length == 0) return;
     //updateConfig();
-    if (queue[0].THUMBNAIL == 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png') { //Then it is a spotify entry
-        //fs.appendFileSync('./console.txt', queue[0].TITLE + " " + queue[0].URL + " " + queue[0].THUMBNAIL + '\n');
+    // console.log(queue[0]);
+    //This means that it is a spotify song in the queue
+    if (queue[0].THUMBNAIL == 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png') {
+
         var video = null;
+        // console.log(`${queue[0].TITLE} is the spotify name`);
+        try {
+        const filters = await ytsr.getFilters(queue[0].TITLE);
+        const filter = filters.get('Type').get('Video');
+        var options = {
+            limit: 5,
+            nextpageRef: filter.ref,
+        }
+            const searchResults = await ytsr(queue[0].TITLE, options);
+            console.log(searchResults)
 
-        ytsr.getFilters(queue[0].TITLE, function (err, filters) {
-
-            // fs.appendFileSync('./console.txt', 'Error ytsr1' + '\n');
-
-            if (err) errorFindingVideo(err);
-            filter = filters.get('Type').find(o => o.name === 'Video');
-            var options = {
-                limit: 5,
-                nextpageRef: filter.ref,
-            }
-            ytsr(null, options, function (err, searchResults) {
-                try {
-                    if (err) throw err;
                     const videos = searchResults.items;
                     for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
                         if (videos[i].duration) {
@@ -1094,14 +1065,14 @@ function playMusic() {
                     }
                     var durationSeconds = (hours * 3600) + (minutes * 60) + (seconds * 1); //duration in seconds
                     var chosenVideo;
-
                     chosenVideo = {
-                        URL: video.link,
+                        URL: video.url,
                         TITLE: video.title,
                         DURATION: durationSeconds,
-                        THUMBNAIL: video.thumbnail,
+                        THUMBNAIL: video.bestThumbnail.url,
                         MEMBER: queue[0].MEMBER
                     };
+                    
                     //add_to_queue(chosenVideo, top, false)
 
                     queue[0] = chosenVideo;
@@ -1109,8 +1080,6 @@ function playMusic() {
                 } catch (err) {
                     errorFindingVideo(err)
                 }
-            });
-        })
     } else {
         createStream(queue[0].URL)
     }
@@ -1473,7 +1442,7 @@ function stop(member) {
     if (musicStream) {
         musicStream.end();
     }
-    client.voice.onnections.forEach(connection => {
+    client.voice.connections.forEach(connection => {
         connection.disconnect();
     });
     if (voiceReceivers.get(member.voice.channelID)) {

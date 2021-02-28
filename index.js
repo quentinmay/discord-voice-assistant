@@ -101,17 +101,16 @@ function updateConfig() {
 /*
 Reads from volume file to have a history of previously used volumes
 */
-function setVolume() {
+async function setVolume() {
     try {
-    fs.readFile('./volume.txt', 'utf8', function (err, data) {
-        if (err) throw err;
+        var data = fs.readFile('./volume.txt', 'utf8');
         var lines = data.split('\n');
         volume = lines[lines.length - 1];
-    });
-} catch(err)
-{
-    volume = 100;
-}
+    } catch (err) {
+        //If there was an error reading the volume file, set a new volume that will populate the volume file on its own.
+        song_volume(null, 100)
+        //volume = 100;
+    }
 }
 
 /*
@@ -122,11 +121,11 @@ function deleteOldAudio() {
         if (err) console.log(err);
         files.forEach(file => {
             try {
-            if (Date.now() - file.split("-")[0] > 60000) {
-         
-                        fs.unlink(`./voicedata/${file}`, (err) => {
+                if (Date.now() - file.split("-")[0] > 60000) {
+
+                    fs.unlink(`./voicedata/${file}`, (err) => {
                     });
-                
+
                 }
             } catch (err) {
 
@@ -302,8 +301,8 @@ client.on('message', (msg) => {
                     msg.member.send("Crash command sent.");
                     process.exit(0);
                 }
-                default:
-                    break;
+            default:
+                break;
         }
         //updateConfig();
     }
@@ -350,164 +349,164 @@ function spotifyGenreList(channel, content, author) {
     if (content.length <= 2) {
 
         spotifyApi.clientCredentialsGrant().then(function (data) {
-                console.log('The access token expires in ' + data.body['expires_in']);
-                console.log('The access token is ' + data.body['access_token']);
+            console.log('The access token expires in ' + data.body['expires_in']);
+            console.log('The access token is ' + data.body['access_token']);
 
-                // Save the access token so that it's used in future calls
-                spotifyApi.setAccessToken(data.body['access_token']);
-                spotifyApi.getCategories({
-                        limit: 50,
-                        offset: 0,
-                        country: 'US',
-                        locale: 'sv_SE'
-                    })
-                    .then(function (data) {
-                        if (content.length == 0) {
-                            channel.send("`Listing all featured genres on spotify.`");
-                            getSpotifyList().then(function (genreList) {
+            // Save the access token so that it's used in future calls
+            spotifyApi.setAccessToken(data.body['access_token']);
+            spotifyApi.getCategories({
+                limit: 50,
+                offset: 0,
+                country: 'US',
+                locale: 'sv_SE'
+            })
+                .then(function (data) {
+                    if (content.length == 0) {
+                        channel.send("`Listing all featured genres on spotify.`");
+                        getSpotifyList().then(function (genreList) {
 
-                            });
+                        });
 
-                            /////////////////////////////////////////////////////////////
-                            var embedCount = Math.ceil((data.body.categories.total / 25));
-                            if (embedCount > 2) embedCount = 2;
-                            for (var i = 0; i < embedCount; i++) {
-                                var currentIndex = i + 1; //Add 1 so that we dont start with 0 for nicer look
+                        /////////////////////////////////////////////////////////////
+                        var embedCount = Math.ceil((data.body.categories.total / 25));
+                        if (embedCount > 2) embedCount = 2;
+                        for (var i = 0; i < embedCount; i++) {
+                            var currentIndex = i + 1; //Add 1 so that we dont start with 0 for nicer look
 
 
-                                var genreList = {
-                                    title: "\u200b",
-                                    url: 'https://open.spotify.com/browse/genres',
-                                    color: 1947988, //this is spotify green in their weird color system thing https://leovoel.github.io/embed-visualizer/
-                                    footer: {
-                                        icon_url: client.user.defaultAvatarURL,
-                                        text: `Page ${currentIndex}/${embedCount}`
-                                    },
-                                    thumbnail: {
-                                        url: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png'
-                                    },
-                                    author: {
-                                        name: "Spotify Genre List",
-                                        url: "https://open.spotify.com/browse/genres",
-                                        icon_url: client.user.defaultAvatarURL
-                                    },
-                                    fields: []
-                                }
-                                genreList.fields = [];
-
-                                data.body.categories.items.forEach(function (item, i) {
-
-                                    if (i >= ((currentIndex - 1) * 25) && i < (currentIndex * 25)) {
-                                        var name = item.name
-                                        genreList.fields.push({
-                                            name: '\u200b',
-                                            value: "`" + (i + 1) + "`. [" + item.name + "](" + 'https://open.spotify.com/view/' + item.id + "-page" + ")"
-                                        });
-                                    }
-                                });
-                                //console.log(genreList);
-                                if (genreList.fields.length >= data.body.categories.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
-                                    channel.send({
-                                        embed: genreList
-                                    });
-                                } else {
-                                    channel.send('`Error sending this embed.`')
-                                    channel.send({
-                                        embed: genreList
-                                    });
-                                }
-
+                            var genreList = {
+                                title: "\u200b",
+                                url: 'https://open.spotify.com/browse/genres',
+                                color: 1947988, //this is spotify green in their weird color system thing https://leovoel.github.io/embed-visualizer/
+                                footer: {
+                                    icon_url: client.user.defaultAvatarURL,
+                                    text: `Page ${currentIndex}/${embedCount}`
+                                },
+                                thumbnail: {
+                                    url: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png'
+                                },
+                                author: {
+                                    name: "Spotify Genre List",
+                                    url: "https://open.spotify.com/browse/genres",
+                                    icon_url: client.user.defaultAvatarURL
+                                },
+                                fields: []
                             }
-                            /////////////////////////////////////////////////////////////////////////////////////
-                        }
+                            genreList.fields = [];
 
-                        if (content.length >= 1) {
-                            var genreSelected = parseInt(content[0]);
-                            if (isNaN(genreSelected)) return;
-                            genreSelected--; //To make up for starting at 0
-                        } else {
-                            return;
-                        }
-                        var selectedGenre = data.body.categories.items[genreSelected];
-                        spotifyApi.getPlaylistsForCategory(data.body.categories.items[genreSelected].id, {
-                                country: 'US',
-                                limit: 50,
-                                offset: 0
-                            })
-                            .then(function (data) {
+                            data.body.categories.items.forEach(function (item, i) {
 
-                                if (content.length == 1) {
-                                    channel.send("`Listing all playlists for " + selectedGenre.name + "`");
-                                    //////////////////////////////////////////////////////////////
-                                    var embedCount = Math.ceil((data.body.playlists.total / 25));
-                                    if (embedCount > 2) embedCount = 2;
-                                    for (var i = 0; i < embedCount; i++) {
-                                        var currentIndex = i + 1; //Add 1 so that we dont start with 0 for nicer look
-                                        var genrePlayListList = {
-                                            title: "\u200b",
-                                            url: 'https://open.spotify.com/view/' + selectedGenre.id + "-page",
-                                            color: 1947988, //this is spotify green in their weird color system thing https://leovoel.github.io/embed-visualizer/
-                                            footer: {
-                                                icon_url: client.user.defaultAvatarURL,
-                                                text: `Page ${currentIndex}/${embedCount}`
-                                            },
-                                            thumbnail: {
-                                                url: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png'
-                                            },
-                                            author: {
-                                                name: selectedGenre.name + " Playlists",
-                                                url: 'https://open.spotify.com/view/' + selectedGenre.id + "-page",
-                                                icon_url: client.user.defaultAvatarURL
-                                            },
-                                            fields: []
-                                        }
-                                        genrePlayListList.fields = [];
-
-                                        data.body.playlists.items.forEach(function (item, i) {
-                                            if (i >= ((currentIndex - 1) * 25) && i < (currentIndex * 25)) {
-                                                var name = item.name
-                                                genrePlayListList.fields.push({
-                                                    name: '\u200b',
-                                                    value: "`" + (i + 1) + "`. [" + item.name + "](" + 'https://open.spotify.com/playlist/' + item.id + ")",
-                                                    url: 'https://open.spotify.com/playlist/' + item.id,
-                                                });
-                                            }
-                                        });
-                                        //console.log(genreList);
-                                        if (genrePlayListList.fields.length >= data.body.playlists.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
-                                            channel.send({
-                                                embed: genrePlayListList
-                                            });
-                                        } else {
-                                            //console.log(data.body.playlists);
-                                            channel.send('`Error sending this embed.`');
-                                            channel.send({
-                                                embed: genrePlayListList
-                                            });
-                                        }
-                                    }
-                                    ///////////////////////////////////////////////////////////////
-                                    //console.log(data.body.playlists.items);
+                                if (i >= ((currentIndex - 1) * 25) && i < (currentIndex * 25)) {
+                                    var name = item.name
+                                    genreList.fields.push({
+                                        name: '\u200b',
+                                        value: "`" + (i + 1) + "`. [" + item.name + "](" + 'https://open.spotify.com/view/' + item.id + "-page" + ")"
+                                    });
                                 }
-                                if (content.length >= 2) {
-                                    var playlistSelected = parseInt(content[1]);
-                                    if (isNaN(playlistSelected)) return;
-                                    playlistSelected--; //To make up for starting at 0
-                                    console.log("Playing spotify playlist " + data.body.playlists.items[playlistSelected].id);
-                                    channel.send("`Playlist selected " + data.body.playlists.items[playlistSelected].name + "`");
-                                    spotifyPlaylistOrAlbum(data.body.playlists.items[playlistSelected].id, 'playlist', author)
-                                }
-
-                            }, function (err) {
-                                console.log("Something went wrong!", err);
                             });
+                            //console.log(genreList);
+                            if (genreList.fields.length >= data.body.categories.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
+                                channel.send({
+                                    embed: genreList
+                                });
+                            } else {
+                                channel.send('`Error sending this embed.`')
+                                channel.send({
+                                    embed: genreList
+                                });
+                            }
+
+                        }
+                        /////////////////////////////////////////////////////////////////////////////////////
+                    }
+
+                    if (content.length >= 1) {
+                        var genreSelected = parseInt(content[0]);
+                        if (isNaN(genreSelected)) return;
+                        genreSelected--; //To make up for starting at 0
+                    } else {
+                        return;
+                    }
+                    var selectedGenre = data.body.categories.items[genreSelected];
+                    spotifyApi.getPlaylistsForCategory(data.body.categories.items[genreSelected].id, {
+                        country: 'US',
+                        limit: 50,
+                        offset: 0
+                    })
+                        .then(function (data) {
+
+                            if (content.length == 1) {
+                                channel.send("`Listing all playlists for " + selectedGenre.name + "`");
+                                //////////////////////////////////////////////////////////////
+                                var embedCount = Math.ceil((data.body.playlists.total / 25));
+                                if (embedCount > 2) embedCount = 2;
+                                for (var i = 0; i < embedCount; i++) {
+                                    var currentIndex = i + 1; //Add 1 so that we dont start with 0 for nicer look
+                                    var genrePlayListList = {
+                                        title: "\u200b",
+                                        url: 'https://open.spotify.com/view/' + selectedGenre.id + "-page",
+                                        color: 1947988, //this is spotify green in their weird color system thing https://leovoel.github.io/embed-visualizer/
+                                        footer: {
+                                            icon_url: client.user.defaultAvatarURL,
+                                            text: `Page ${currentIndex}/${embedCount}`
+                                        },
+                                        thumbnail: {
+                                            url: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png'
+                                        },
+                                        author: {
+                                            name: selectedGenre.name + " Playlists",
+                                            url: 'https://open.spotify.com/view/' + selectedGenre.id + "-page",
+                                            icon_url: client.user.defaultAvatarURL
+                                        },
+                                        fields: []
+                                    }
+                                    genrePlayListList.fields = [];
+
+                                    data.body.playlists.items.forEach(function (item, i) {
+                                        if (i >= ((currentIndex - 1) * 25) && i < (currentIndex * 25)) {
+                                            var name = item.name
+                                            genrePlayListList.fields.push({
+                                                name: '\u200b',
+                                                value: "`" + (i + 1) + "`. [" + item.name + "](" + 'https://open.spotify.com/playlist/' + item.id + ")",
+                                                url: 'https://open.spotify.com/playlist/' + item.id,
+                                            });
+                                        }
+                                    });
+                                    //console.log(genreList);
+                                    if (genrePlayListList.fields.length >= data.body.playlists.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
+                                        channel.send({
+                                            embed: genrePlayListList
+                                        });
+                                    } else {
+                                        //console.log(data.body.playlists);
+                                        channel.send('`Error sending this embed.`');
+                                        channel.send({
+                                            embed: genrePlayListList
+                                        });
+                                    }
+                                }
+                                ///////////////////////////////////////////////////////////////
+                                //console.log(data.body.playlists.items);
+                            }
+                            if (content.length >= 2) {
+                                var playlistSelected = parseInt(content[1]);
+                                if (isNaN(playlistSelected)) return;
+                                playlistSelected--; //To make up for starting at 0
+                                console.log("Playing spotify playlist " + data.body.playlists.items[playlistSelected].id);
+                                channel.send("`Playlist selected " + data.body.playlists.items[playlistSelected].name + "`");
+                                spotifyPlaylistOrAlbum(data.body.playlists.items[playlistSelected].id, 'playlist', author)
+                            }
+
+                        }, function (err) {
+                            console.log("Something went wrong!", err);
+                        });
 
 
-                    }, function (err) {
-                        console.log("Something went wrong!", err);
-                    });
+                }, function (err) {
+                    console.log("Something went wrong!", err);
+                });
 
-            },
+        },
             function (err) {
                 console.log('Something went wrong when retrieving an access token', err);
             });
@@ -528,11 +527,11 @@ function getSpotifyList() {
             // Save the access token so that it's used in future calls
             spotifyApi.setAccessToken(data.body['access_token']);
             spotifyApi.getCategories({
-                    limit: 50,
-                    offset: 0,
-                    country: 'US',
-                    locale: 'sv_SE'
-                })
+                limit: 50,
+                offset: 0,
+                country: 'US',
+                locale: 'sv_SE'
+            })
                 .then(function (data) {
 
                     /////////////////////////////////////////////////////////////
@@ -598,7 +597,7 @@ function song_volume(channel, vol) {
         }
     }
     if (vol < 0 || vol > 100) return;
-    channel.send("`Volume set to " + vol + ".`");
+    if (channel) channel.send("`Volume set to " + vol + ".`");
     volume = vol;
     fs.appendFile('./volume.txt', '\n' + vol, (err) => {
         if (err) throw err;
@@ -793,12 +792,12 @@ async function searchYoutube(author, content, top) {
     console.log(urlParser.parse(content));
     if (urlParser.parse(content)) {
         //Checks to see if its a video, on youtube, and IS NOT a playlist
-        if ((urlParser.parse(content)).mediaType == 'video' && (urlParser.parse(content)).provider == 'youtube' &&  !(urlParser.parse(content)).list) {
+        if ((urlParser.parse(content)).mediaType == 'video' && (urlParser.parse(content)).provider == 'youtube' && !(urlParser.parse(content)).list) {
             console.log('valid youtube url');
-            
+
             if (content.indexOf("start_radio") == -1) {
                 var video = await ytdl.getBasicInfo(content);
-                
+
                 var chosenVideo;
                 //console.log(video);
                 chosenVideo = {
@@ -809,16 +808,16 @@ async function searchYoutube(author, content, top) {
                     MEMBER: author
                 }
                 add_to_queue(chosenVideo, top, false)
-                
-                
-            
+
+
+
             }
             //If its not a video, then check if its youtube and IS a list
-        } else if ((urlParser.parse(content)).provider == 'youtube' &&  (urlParser.parse(content)).list) {
+        } else if ((urlParser.parse(content)).provider == 'youtube' && (urlParser.parse(content)).list) {
             console.log('going for ' + (urlParser.parse(content)).list);
-            
+
             ytfps((urlParser.parse(content)).list).then(items => {
-                
+
                 textChannel.send('`Adding playlist to queue.`');
                 textChannel.send("`" + items.videos.length + " songs from playlist added to queue.`");
 
@@ -849,55 +848,57 @@ async function searchYoutube(author, content, top) {
         }
 
     } else {
-        var video = null;
-
-        ytsr.getFilters(content, function (err, filters) {
-            if (err) throw err;
-            filter = filters.get('Type').find(o => o.name === 'Video');
+        try {
+            var video = null;
+            const filters = await ytsr.getFilters(content);
+            const filter = filters.get('Type').get('Video');
             var options = {
                 limit: 5,
                 nextpageRef: filter.ref,
             }
-            ytsr(null, options, function (err, searchResults) {
-                if (err) throw err;
-                const videos = searchResults.items;
-                for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
-                    if (videos[i].duration) {
-                        video = videos[i];
-                        break;
-                    }
-                }
-                if (video == null) {
-                    console.log('No video found.');
-                    throw new Error("No video found")
-                }
-                var hours = 0;
-                var minutes = 0;
-                var seconds = 0;
-                var durationArray = video.duration.split(':');
-                if (durationArray.length == 2) { //minutes:seconds
-                    minutes = durationArray[0];
-                    seconds = durationArray[1];
+            const searchResults = await ytsr(content, options);
+            console.log(searchResults)
 
-                } else if (durationArray.length == 3) { //hours:minutes:seconds
-                    hours = durationArray[0];
-                    minutes = durationArray[1];
-                    seconds = durationArray[2];
-
+            const videos = searchResults.items;
+            for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
+                if (videos[i].duration) {
+                    video = videos[i];
+                    break;
                 }
-                var durationSeconds = (hours * 3600) + (minutes * 60) + (seconds * 1); //duration in seconds
-                var chosenVideo;
+            }
+            if (video == null) {
+                console.log('No video found.');
+                // fs.appendFileSync('./console.txt', 'No Video found' + '\n');
+                throw new Error("No video found")
+            }
+            var hours = 0;
+            var minutes = 0;
+            var seconds = 0;
+            var durationArray = video.duration.split(':');
+            if (durationArray.length == 2) { //minutes:seconds
+                minutes = durationArray[0];
+                seconds = durationArray[1];
 
-                chosenVideo = {
-                    URL: video.link,
-                    TITLE: video.title,
-                    DURATION: durationSeconds,
-                    THUMBNAIL: video.thumbnail,
-                    MEMBER: author
-                };
-                add_to_queue(chosenVideo, top, false)
-            });
-        }).catch(err => errorFindingVideo(err));
+            } else if (durationArray.length == 3) { //hours:minutes:seconds
+                hours = durationArray[0];
+                minutes = durationArray[1];
+                seconds = durationArray[2];
+
+            }
+            var durationSeconds = (hours * 3600) + (minutes * 60) + (seconds * 1); //duration in seconds
+            var chosenVideo;
+            chosenVideo = {
+                URL: video.url,
+                TITLE: video.title,
+                DURATION: durationSeconds,
+                THUMBNAIL: video.bestThumbnail.url,
+                MEMBER: author
+            };
+            add_to_queue(chosenVideo, top, false)
+        } catch (err) {
+            console.log(err);
+
+        }
     }
 
 }
@@ -905,75 +906,75 @@ async function searchYoutube(author, content, top) {
 function spotifyPlaylistOrAlbum(id, type, author) {
 
     try {
-    spotifyApi.clientCredentialsGrant().then(
-        function (data) {
-            console.log('The access token expires in ' + data.body['expires_in']);
-            console.log('The access token is ' + data.body['access_token']);
+        spotifyApi.clientCredentialsGrant().then(
+            function (data) {
+                console.log('The access token expires in ' + data.body['expires_in']);
+                console.log('The access token is ' + data.body['access_token']);
 
-            // Save the access token so that it's used in future calls
-            spotifyApi.setAccessToken(data.body['access_token']);
-            if (type == 'playlist') {
-                spotifyApi.getPlaylist(id).then(function (data) {
-                    //console.log(data.body.tracks.items);
-                    data.body.tracks.items.forEach(function (item, index) {
-                        if (item.track == null) return;
-                        var song_name = item.track.name;
-                        var artists = [];
-                        item.track.artists.forEach(artist => {
-
-                            artists.push(artist.name);
-                        })
-                        var track = {
-                            URL: `https://open.spotify.com/track/${item.track.id}`,
-                            TITLE: (artists.join(', ') + " - " + song_name),
-                            DURATION: parseInt(item.track.duration_ms / 1000),
-                            THUMBNAIL: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png',
-                            MEMBER: author
-                        };
-
-                        add_to_queue(track, false, true);
-                    });
-
-                }, function (err) {
-                    console.log('Something went wrong!', err);
-                });
-            } else if (type == 'album') {
-                spotifyApi.getAlbumTracks(id, {
-                        limit: 50,
-                        offset: 0
-                    })
-                    .then(function (data) {
-                        //console.log(data.body.items);
-                        data.body.items.forEach(function (item, index) {
-                            if (item == null) return;
-                            var song_name = item.name;
+                // Save the access token so that it's used in future calls
+                spotifyApi.setAccessToken(data.body['access_token']);
+                if (type == 'playlist') {
+                    spotifyApi.getPlaylist(id).then(function (data) {
+                        //console.log(data.body.tracks.items);
+                        data.body.tracks.items.forEach(function (item, index) {
+                            if (item.track == null) return;
+                            var song_name = item.track.name;
                             var artists = [];
-                            item.artists.forEach(artist => {
+                            item.track.artists.forEach(artist => {
 
                                 artists.push(artist.name);
                             })
                             var track = {
-                                URL: `https://open.spotify.com/track/${item.id}`,
+                                URL: `https://open.spotify.com/track/${item.track.id}`,
                                 TITLE: (artists.join(', ') + " - " + song_name),
-                                DURATION: parseInt(item.duration_ms / 1000),
+                                DURATION: parseInt(item.track.duration_ms / 1000),
                                 THUMBNAIL: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png',
                                 MEMBER: author
                             };
 
                             add_to_queue(track, false, true);
                         });
+
                     }, function (err) {
                         console.log('Something went wrong!', err);
                     });
+                } else if (type == 'album') {
+                    spotifyApi.getAlbumTracks(id, {
+                        limit: 50,
+                        offset: 0
+                    })
+                        .then(function (data) {
+                            //console.log(data.body.items);
+                            data.body.items.forEach(function (item, index) {
+                                if (item == null) return;
+                                var song_name = item.name;
+                                var artists = [];
+                                item.artists.forEach(artist => {
 
-            } else {
-                console.log('Not playlist or album');
-            }
-        },
-        function (err) {
-            console.log('Something went wrong when retrieving an access token', err);
-        });
-    } catch(err) {
+                                    artists.push(artist.name);
+                                })
+                                var track = {
+                                    URL: `https://open.spotify.com/track/${item.id}`,
+                                    TITLE: (artists.join(', ') + " - " + song_name),
+                                    DURATION: parseInt(item.duration_ms / 1000),
+                                    THUMBNAIL: 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png',
+                                    MEMBER: author
+                                };
+
+                                add_to_queue(track, false, true);
+                            });
+                        }, function (err) {
+                            console.log('Something went wrong!', err);
+                        });
+
+                } else {
+                    console.log('Not playlist or album');
+                }
+            },
+            function (err) {
+                console.log('Something went wrong when retrieving an access token', err);
+            });
+    } catch (err) {
         console.log(err);
     }
 }
@@ -1028,58 +1029,58 @@ async function playMusic() {
         var video = null;
         // console.log(`${queue[0].TITLE} is the spotify name`);
         try {
-        const filters = await ytsr.getFilters(queue[0].TITLE);
-        const filter = filters.get('Type').get('Video');
-        var options = {
-            limit: 5,
-            nextpageRef: filter.ref,
-        }
+            const filters = await ytsr.getFilters(queue[0].TITLE);
+            const filter = filters.get('Type').get('Video');
+            var options = {
+                limit: 5,
+                nextpageRef: filter.ref,
+            }
             const searchResults = await ytsr(queue[0].TITLE, options);
             console.log(searchResults)
 
-                    const videos = searchResults.items;
-                    for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
-                        if (videos[i].duration) {
-                            video = videos[i];
-                            break;
-                        }
-                    }
-                    if (video == null) {
-                        console.log('No video found.');
-                        // fs.appendFileSync('./console.txt', 'No Video found' + '\n');
-                        throw new Error("No video found")
-                    }
-                    var hours = 0;
-                    var minutes = 0;
-                    var seconds = 0;
-                    var durationArray = video.duration.split(':');
-                    if (durationArray.length == 2) { //minutes:seconds
-                        minutes = durationArray[0];
-                        seconds = durationArray[1];
-
-                    } else if (durationArray.length == 3) { //hours:minutes:seconds
-                        hours = durationArray[0];
-                        minutes = durationArray[1];
-                        seconds = durationArray[2];
-
-                    }
-                    var durationSeconds = (hours * 3600) + (minutes * 60) + (seconds * 1); //duration in seconds
-                    var chosenVideo;
-                    chosenVideo = {
-                        URL: video.url,
-                        TITLE: video.title,
-                        DURATION: durationSeconds,
-                        THUMBNAIL: video.bestThumbnail.url,
-                        MEMBER: queue[0].MEMBER
-                    };
-                    
-                    //add_to_queue(chosenVideo, top, false)
-
-                    queue[0] = chosenVideo;
-                    createStream(queue[0].URL)
-                } catch (err) {
-                    errorFindingVideo(err)
+            const videos = searchResults.items;
+            for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
+                if (videos[i].duration) {
+                    video = videos[i];
+                    break;
                 }
+            }
+            if (video == null) {
+                console.log('No video found.');
+                // fs.appendFileSync('./console.txt', 'No Video found' + '\n');
+                throw new Error("No video found")
+            }
+            var hours = 0;
+            var minutes = 0;
+            var seconds = 0;
+            var durationArray = video.duration.split(':');
+            if (durationArray.length == 2) { //minutes:seconds
+                minutes = durationArray[0];
+                seconds = durationArray[1];
+
+            } else if (durationArray.length == 3) { //hours:minutes:seconds
+                hours = durationArray[0];
+                minutes = durationArray[1];
+                seconds = durationArray[2];
+
+            }
+            var durationSeconds = (hours * 3600) + (minutes * 60) + (seconds * 1); //duration in seconds
+            var chosenVideo;
+            chosenVideo = {
+                URL: video.url,
+                TITLE: video.title,
+                DURATION: durationSeconds,
+                THUMBNAIL: video.bestThumbnail.url,
+                MEMBER: queue[0].MEMBER
+            };
+
+            //add_to_queue(chosenVideo, top, false)
+
+            queue[0] = chosenVideo;
+            createStream(queue[0].URL)
+        } catch (err) {
+            errorFindingVideo(err)
+        }
     } else {
         createStream(queue[0].URL)
     }
@@ -1152,13 +1153,13 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
 //Standard functionality just to convert time in seconds to readable hours:min:seconds
 function convertTime(sec) {
     var hours = Math.floor(sec / 3600);
-    (hours >= 1) ? sec = sec - (hours * 3600): hours = '00';
+    (hours >= 1) ? sec = sec - (hours * 3600) : hours = '00';
     var min = Math.floor(sec / 60);
-    (min >= 1) ? sec = sec - (min * 60): min = '00';
-    (sec < 1) ? sec = '00': void 0;
+    (min >= 1) ? sec = sec - (min * 60) : min = '00';
+    (sec < 1) ? sec = '00' : void 0;
 
-    (min.toString().length == 1) ? min = '0' + min: void 0;
-    (sec.toString().length == 1) ? sec = '0' + sec: void 0;
+    (min.toString().length == 1) ? min = '0' + min : void 0;
+    (sec.toString().length == 1) ? sec = '0' + sec : void 0;
 
     return hours + ':' + min + ':' + sec;
 }
@@ -1460,11 +1461,11 @@ First function to be run in all the code. Sets up our config file with necessary
 at the top as a global variable.
 */
 async function reloadConfig() {
-    return new Promise(function(resolve, reject) {
-        fs.readFile(configFile,'utf8', function(err, json) {
-            if(err) reject(false);
-                config = JSON.parse(json);
-                resolve(true)
+    return new Promise(function (resolve, reject) {
+        fs.readFile(configFile, 'utf8', function (err, json) {
+            if (err) reject(false);
+            config = JSON.parse(json);
+            resolve(true)
         });
     });
 }
@@ -1497,10 +1498,10 @@ Initial boot sequence to make sure that we properly load our config file first a
 Sets up our config global and other necessary stuffs.
 */
 async function bootSequence() {
-        await reloadConfig();
-        await initializeSpotifyAPI();
-        await client.login(config.discordToken)//.catch(console.error);
-        return true;
+    await reloadConfig();
+    await initializeSpotifyAPI();
+    await client.login(config.discordToken)//.catch(console.error);
+    return true;
 }
 
 bootSequence().catch(err => console.error(err))

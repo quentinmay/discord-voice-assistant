@@ -1,0 +1,10 @@
+{
+    "discordToken": "",
+    "discordDevID": "",
+    "commandPrefix": "0",
+    "spotifyClientID": "",
+    "spotifyClientSecret": "",
+    "statusActivity": "status.",
+    "statusURL": "https://www.twitch.tv/twitch",
+    "statusType": "STREAMING"
+}

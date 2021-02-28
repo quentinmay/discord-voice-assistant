@@ -14,10 +14,12 @@ Easily deployable using git clone:
 
 ```bash
 git clone https://github.com/quentinmay/discord-voice-assistant.git
-cd discordvoiceassistant
-mkdir voicedata
+cd discord-voice-assistant
 npm install
 pip install SpeechRecognition
+
+mkdir voicedata
+touch volume.txt
 ```
 Now you must configure the bot before running using config example file:
 ```bash

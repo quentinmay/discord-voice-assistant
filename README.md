@@ -14,7 +14,7 @@ Easily deployable using git clone:
 
 ```bash
 git clone https://github.com/quentinmay/discord-voice-assistant.git
-cd discordvoiceassistant
+cd discord-voice-assistant
 mkdir voicedata
 npm install
 pip install SpeechRecognition

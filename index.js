@@ -730,9 +730,6 @@ function song_skip() {
     if (dispatcher) {
 
         dispatcher.end();
-        if (repeat == false) {
-            queue.shift();
-        }
         playMusic();
         //dispatcher.end();
     }
@@ -790,7 +787,7 @@ function errorFindingVideo(err) {
 
 async function searchYoutube(author, content, top) {
 
-    console.log(urlParser.parse(content));
+    // console.log(urlParser.parse(content));
     if (urlParser.parse(content)) {
         //Checks to see if its a video, on youtube, and IS NOT a playlist
         if ((urlParser.parse(content)).mediaType == 'video' && (urlParser.parse(content)).provider == 'youtube' && !(urlParser.parse(content)).list) {
@@ -858,7 +855,7 @@ async function searchYoutube(author, content, top) {
                 nextpageRef: filter.ref,
             }
             const searchResults = await ytsr(content, options);
-            console.log(searchResults)
+            // console.log(searchResults)
 
             const videos = searchResults.items;
             for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
@@ -1037,7 +1034,7 @@ async function playMusic() {
                 nextpageRef: filter.ref,
             }
             const searchResults = await ytsr(queue[0].TITLE, options);
-            console.log(searchResults)
+            // console.log(searchResults)
 
             const videos = searchResults.items;
             for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
@@ -1123,9 +1120,11 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
 
             if (pause == true) return;
             if (speaking == 1) return; //still speaking
-            console.log(speaking);
+            // console.log(speaking);
             console.log('dispatcher end 1')
             if (repeat == false) {
+                // console.log('no repeat so shift queue. 2');
+
                 queue.shift();
             }
             playMusic();
@@ -1141,6 +1140,8 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
                 if (speaking == 1) return; //still speaking
                 console.log('dispatcher end 2')
                 if (repeat == false) {
+                    console.log('no repeat so shift queue. 3');
+
                     queue.shift();
                 }
                 playMusic();

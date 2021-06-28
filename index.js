@@ -236,6 +236,7 @@ client.on('message', (msg) => {
 
                 break;
             case 'spotify':
+            case 'playlist':
                 if (config.spotifyClientID && config.spotifyClientSecret) {
                     if (!msg.member.voice.channel) {
 
@@ -660,7 +661,7 @@ function sendQueue(channel) {
             url: queue[0].URL,
             color: 10181046, //this is purple in their weird color system thing https://leovoel.github.io/embed-visualizer/
             footer: {
-                icon_url: client.user.defaultAvatarURL,
+                icon_url: client.user.displayAvatarURL(),
                 text: queue.length + " songs in queue."
             },
             thumbnail: {
@@ -1122,6 +1123,7 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
 
             if (pause == true) return;
             if (speaking == 1) return; //still speaking
+            console.log(speaking);
             console.log('dispatcher end 1')
             if (repeat == false) {
                 queue.shift();

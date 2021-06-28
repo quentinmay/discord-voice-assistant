@@ -17,17 +17,18 @@
   },
   "homepage": "https://github.com/quentinmay/discord-voice-assistant#readme",
   "dependencies": {
-    "discord.js": "^12.5.1",
+    "discord.js": "^12.5.3",
+    "ffmpeg-static": "^4.4.0",
     "js-video-url-parser": "^0.4.3",
     "opusscript": "0.0.8",
     "replace-ext": "^2.0.0",
-    "spotify-uri": "^2.1.0",
+    "spotify-uri": "^2.2.0",
     "spotify-web-api-node": "^5.0.2",
     "string-similarity": "^4.0.4",
     "wav": "^1.0.2",
     "words-to-numbers": "^1.5.1",
-    "ytdl-core": "^4.5.0",
-    "ytfps": "^1.0.4",
-    "ytsr": "^3.3.1"
+    "ytdl-core": "^4.8.3",
+    "ytfps": "^1.0.5",
+    "ytsr": "^3.5.0"
   }
 }

@@ -1,4 +1,4 @@
-# Discord Voice Assistant
+# 🎤 Discord Voice Assistant
 
 Discord Voice Assistant is a Discord Bot built using [discord.js](https://discord.js.org) and [python speech recognition](https://pypi.org/project/SpeechRecognition) to be a voice activated, multi-purpose discord bot. 
 

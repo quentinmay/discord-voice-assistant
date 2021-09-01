@@ -45,3 +45,4 @@ Just startup the script now that everything has been built and you've filled you
 ```bash
 node index.js
 ```
+Basic startup guide/instructions once you have the scripts running can be found on [issue #1](https://github.com/quentinmay/discord-voice-assistant/issues/1#issuecomment-909806831) 

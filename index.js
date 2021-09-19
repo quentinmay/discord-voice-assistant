@@ -58,7 +58,7 @@ var configFile = './config.json';
 
 
 client.on('ready', () => {
-    console.log("Started!");
+    console.log("[" + new Date().toISOString() + "]", "Started!");
     setVolume();
     disconnectChannel();
     setStatus();
@@ -118,7 +118,7 @@ Removes old temp data of recordings that aren't necessary anymore. Default time 
 */
 function deleteOldAudio() {
     fs.readdir("./voicedata/", (err, files) => {
-        if (err) console.log(err);
+        if (err) console.log("[" + new Date().toISOString() + "]", err);
         files.forEach(file => {
             try {
                 if (Date.now() - file.split("-")[0] > 60000) {
@@ -155,7 +155,7 @@ function disconnectChannel() {
                         member[1].voice.channel.leave();
                     });
 
-                    console.log('Disconnect from channel')
+                    console.log("[" + new Date().toISOString() + "]", 'Disconnect from channel')
                 }
             }
         }
@@ -205,9 +205,9 @@ client.on('message', (msg) => {
                     //gaming 13
                     var matches = stringSimilarity.findBestMatch('gaming', names);
                     if (matches.bestMatch.rating < .7) {
-                        console.log("None close found")
+                        console.log("[" + new Date().toISOString() + "]", "None close found")
                     } else {
-                        console.log(matches.bestMatchIndex + ":" + matches.bestMatch.target);
+                        console.log("[" + new Date().toISOString() + "]", matches.bestMatchIndex + ":" + matches.bestMatch.target);
                     }
                 });
                 break;
@@ -218,9 +218,9 @@ client.on('message', (msg) => {
                 msg.channel.send(`Average Speech Recognition Timer: ${voiceRecognitionTotalTime / voiceRecognitionInstances}ms.`);
                 break;
             case 'queue':
-                //console.log(client.voiceConnections);
+                //console.log("["+new Date().toISOString()+"]", client.voiceConnections);
                 sendQueue(msg.channel);
-                //console.log(queue);
+                //console.log("["+new Date().toISOString()+"]", queue);
                 break;
             case 'play':
             case 'playtop':
@@ -228,10 +228,10 @@ client.on('message', (msg) => {
                     var top = true;
                     if (cmd == 'play') top = false;
                     voiceChannel = msg.member.voice.channel;
-                    console.log('play command ' + cmd)
+                    console.log("[" + new Date().toISOString() + "]", 'play command ' + cmd)
                     commandPlay(msg.member, cmd, contents, top);
                 } else {
-                    console.log("Authors voice channel doesnt exist");
+                    console.log("[" + new Date().toISOString() + "]", "Authors voice channel doesnt exist");
                 }
 
                 break;
@@ -246,7 +246,7 @@ client.on('message', (msg) => {
                         spotifyGenreList(msg.channel, contents, msg.member);
                     }
                 } else {
-                    console.log("spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.");
+                    console.log("[" + new Date().toISOString() + "]", "spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.");
                 }
                 break;
             case 'volume':
@@ -259,23 +259,23 @@ client.on('message', (msg) => {
                 break;
             case 'skip':
                 msg.channel.send("`Song skipped.`")
-                console.log('Song skipped.');
+                console.log("[" + new Date().toISOString() + "]", 'Song skipped.');
                 song_skip();
                 break;
 
             case 'pause':
                 msg.channel.send("`Song paused.`")
-                console.log('Song paused.');
+                console.log("[" + new Date().toISOString() + "]", 'Song paused.');
                 song_pause();
                 break;
             case 'resume':
                 msg.channel.send("`Song resumed.`")
-                console.log('Song resumed.');
+                console.log("[" + new Date().toISOString() + "]", 'Song resumed.');
                 song_resume();
                 break;
             case 'clear':
                 msg.channel.send("`Song cleared.`")
-                console.log('Queue cleared.');
+                console.log("[" + new Date().toISOString() + "]", 'Queue cleared.');
                 song_clear();
                 break;
             case 'shuffle':
@@ -335,7 +335,7 @@ function spotifyGenreList(channel, content, author) {
     } else {
         content = content.split(' ');
     }
-    console.log(content);
+    console.log("[" + new Date().toISOString() + "]", content);
     var playlistSelected;
     if (content.length == 2) {
 
@@ -350,8 +350,8 @@ function spotifyGenreList(channel, content, author) {
     if (content.length <= 2) {
 
         spotifyApi.clientCredentialsGrant().then(function (data) {
-            console.log('The access token expires in ' + data.body['expires_in']);
-            console.log('The access token is ' + data.body['access_token']);
+            console.log("[" + new Date().toISOString() + "]", 'The access token expires in ' + data.body['expires_in']);
+            console.log("[" + new Date().toISOString() + "]", 'The access token is ' + data.body['access_token']);
 
             // Save the access token so that it's used in future calls
             spotifyApi.setAccessToken(data.body['access_token']);
@@ -405,7 +405,7 @@ function spotifyGenreList(channel, content, author) {
                                     });
                                 }
                             });
-                            //console.log(genreList);
+                            //console.log("["+new Date().toISOString()+"]", genreList);
                             if (genreList.fields.length >= data.body.categories.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
                                 channel.send({
                                     embed: genreList
@@ -473,13 +473,13 @@ function spotifyGenreList(channel, content, author) {
                                             });
                                         }
                                     });
-                                    //console.log(genreList);
+                                    //console.log("["+new Date().toISOString()+"]", genreList);
                                     if (genrePlayListList.fields.length >= data.body.playlists.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
                                         channel.send({
                                             embed: genrePlayListList
                                         });
                                     } else {
-                                        //console.log(data.body.playlists);
+                                        //console.log("["+new Date().toISOString()+"]", data.body.playlists);
                                         channel.send('`Error sending this embed.`');
                                         channel.send({
                                             embed: genrePlayListList
@@ -487,29 +487,29 @@ function spotifyGenreList(channel, content, author) {
                                     }
                                 }
                                 ///////////////////////////////////////////////////////////////
-                                //console.log(data.body.playlists.items);
+                                //console.log("["+new Date().toISOString()+"]", data.body.playlists.items);
                             }
                             if (content.length >= 2) {
                                 var playlistSelected = parseInt(content[1]);
                                 if (isNaN(playlistSelected)) return;
                                 playlistSelected--; //To make up for starting at 0
-                                console.log("Playing spotify playlist " + data.body.playlists.items[playlistSelected].id);
+                                console.log("[" + new Date().toISOString() + "]", "Playing spotify playlist " + data.body.playlists.items[playlistSelected].id);
                                 channel.send("`Playlist selected " + data.body.playlists.items[playlistSelected].name + "`");
                                 spotifyPlaylistOrAlbum(data.body.playlists.items[playlistSelected].id, 'playlist', author)
                             }
 
                         }, function (err) {
-                            console.log("Something went wrong!", err);
+                            console.log("[" + new Date().toISOString() + "]", "Something went wrong!", err);
                         });
 
 
                 }, function (err) {
-                    console.log("Something went wrong!", err);
+                    console.log("[" + new Date().toISOString() + "]", "Something went wrong!", err);
                 });
 
         },
             function (err) {
-                console.log('Something went wrong when retrieving an access token', err);
+                console.log("[" + new Date().toISOString() + "]", 'Something went wrong when retrieving an access token', err);
             });
 
 
@@ -522,8 +522,8 @@ function getSpotifyList() {
 
     return new Promise(function (resolve, reject) {
         spotifyApi.clientCredentialsGrant().then(function (data) {
-            console.log('The access token expires in ' + data.body['expires_in']);
-            console.log('The access token is ' + data.body['access_token']);
+            console.log("[" + new Date().toISOString() + "]", 'The access token expires in ' + data.body['expires_in']);
+            console.log("[" + new Date().toISOString() + "]", 'The access token is ' + data.body['access_token']);
 
             // Save the access token so that it's used in future calls
             spotifyApi.setAccessToken(data.body['access_token']);
@@ -572,7 +572,7 @@ function getSpotifyList() {
                                 });
                             }
                         });
-                        //console.log(genreList);
+                        //console.log("["+new Date().toISOString()+"]", genreList);
                         if (genreList.fields.length >= data.body.categories.items.length % 25) { //only sends if it has enough fields to take into account all the playlists
                             resolve(genreList);
                         } else {
@@ -613,17 +613,17 @@ function song_shuffle(channel) {
         var tmp = [].concat(queue);
         tmp.shift();
         tmp = shuffle(tmp);
-        //console.log(tmp);
+        //console.log("["+new Date().toISOString()+"]", tmp);
         var tmp2 = [queue[0]];
         for (var i = 0; i < tmp.length; i++) {
             tmp2.push(tmp[i]);
-            //console.log(tmp2);
+            //console.log("["+new Date().toISOString()+"]", tmp2);
         }
         queue = tmp2;
-        //console.log(tmp2);
+        //console.log("["+new Date().toISOString()+"]", tmp2);
         //queue = [queue[0]];
         //queue.concat(shuffle(tmp));
-        //console.log(queue);
+        //console.log("["+new Date().toISOString()+"]", queue);
         channel.send("`Queue has been shuffled.`")
     } else {
         channel.send("`Not enough songs to shuffle.`");
@@ -696,8 +696,8 @@ function sendQueue(channel) {
         });
     } catch (err) {
         channel.send("`Error while sending queue.`");
-        console.log(queue);
-        console.log(err);
+        console.log("[" + new Date().toISOString() + "]", queue);
+        console.log("[" + new Date().toISOString() + "]", err);
     }
 }
 
@@ -743,7 +743,7 @@ that hes in, he will leave and remove the song queue.
  */
 function botAfkTimer() {
     if (client.voice.connections.size > 0) {
-        //console.log(client.voiceConnections.first(1)[0].channel.members.size);
+        //console.log("["+new Date().toISOString()+"]", client.voiceConnections.first(1)[0].channel.members.size);
         if (client.voice.connections.first(1)[0].channel.members.size < 2) {
             afkTimer++;
         } else {
@@ -751,7 +751,7 @@ function botAfkTimer() {
         }
     }
     if (afkTimer >= 5) { //2 minutes 5 instances so 10 minute timer.
-        console.log('Been AFK for 10 minutes. DCing');
+        console.log("[" + new Date().toISOString() + "]", 'Been AFK for 10 minutes. DCing');
         stop(client.voice.connections.first(1)[0].channel.members.first(1)[0]);
 
     }
@@ -773,13 +773,13 @@ function commandPlay(member, cmd, content, top) {
 
 
     } catch (err) {
-        console.log(`Error on commandPlay function: ${err}`);
+        console.log("[" + new Date().toISOString() + "]", `Error on commandPlay function: ${err}`);
     }
 }
 
 function errorFindingVideo(err) {
-    console.log(err);
-    console.log('Error finding video');
+    console.log("[" + new Date().toISOString() + "]", err);
+    console.log("[" + new Date().toISOString() + "]", 'Error finding video');
     textChannel.send("`Error: Error finding video.`")
     song_skip();
     // fs.appendFileSync('./console.txt', 'Error finding video' + '\n');
@@ -787,17 +787,17 @@ function errorFindingVideo(err) {
 
 async function searchYoutube(author, content, top) {
 
-    // console.log(urlParser.parse(content));
+    // console.log("["+new Date().toISOString()+"]", urlParser.parse(content));
     if (urlParser.parse(content)) {
         //Checks to see if its a video, on youtube, and IS NOT a playlist
         if ((urlParser.parse(content)).mediaType == 'video' && (urlParser.parse(content)).provider == 'youtube' && !(urlParser.parse(content)).list) {
-            console.log('valid youtube url');
+            console.log("[" + new Date().toISOString() + "]", 'valid youtube url');
 
             if (content.indexOf("start_radio") == -1) {
                 var video = await ytdl.getBasicInfo(content);
 
                 var chosenVideo;
-                //console.log(video);
+                //console.log("["+new Date().toISOString()+"]", video);
                 chosenVideo = {
                     URL: content,
                     TITLE: video.videoDetails.title,
@@ -812,7 +812,7 @@ async function searchYoutube(author, content, top) {
             }
             //If its not a video, then check if its youtube and IS a list
         } else if ((urlParser.parse(content)).provider == 'youtube' && (urlParser.parse(content)).list) {
-            console.log('going for ' + (urlParser.parse(content)).list);
+            console.log("[" + new Date().toISOString() + "]", 'going for ' + (urlParser.parse(content)).list);
 
             ytfps((urlParser.parse(content)).list).then(items => {
 
@@ -855,7 +855,7 @@ async function searchYoutube(author, content, top) {
                 nextpageRef: filter.ref,
             }
             const searchResults = await ytsr(content, options);
-            // console.log(searchResults)
+            // console.log("["+new Date().toISOString()+"]", searchResults)
 
             const videos = searchResults.items;
             for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
@@ -865,7 +865,7 @@ async function searchYoutube(author, content, top) {
                 }
             }
             if (video == null) {
-                console.log('No video found.');
+                console.log("[" + new Date().toISOString() + "]", 'No video found.');
                 // fs.appendFileSync('./console.txt', 'No Video found' + '\n');
                 throw new Error("No video found")
             }
@@ -894,7 +894,7 @@ async function searchYoutube(author, content, top) {
             };
             add_to_queue(chosenVideo, top, false)
         } catch (err) {
-            console.log(err);
+            console.log("[" + new Date().toISOString() + "]", err);
 
         }
     }
@@ -906,14 +906,14 @@ function spotifyPlaylistOrAlbum(id, type, author) {
     try {
         spotifyApi.clientCredentialsGrant().then(
             function (data) {
-                console.log('The access token expires in ' + data.body['expires_in']);
-                console.log('The access token is ' + data.body['access_token']);
+                console.log("[" + new Date().toISOString() + "]", 'The access token expires in ' + data.body['expires_in']);
+                console.log("[" + new Date().toISOString() + "]", 'The access token is ' + data.body['access_token']);
 
                 // Save the access token so that it's used in future calls
                 spotifyApi.setAccessToken(data.body['access_token']);
                 if (type == 'playlist') {
                     spotifyApi.getPlaylist(id).then(function (data) {
-                        //console.log(data.body.tracks.items);
+                        //console.log("["+new Date().toISOString()+"]", data.body.tracks.items);
                         data.body.tracks.items.forEach(function (item, index) {
                             if (item.track == null) return;
                             var song_name = item.track.name;
@@ -934,7 +934,7 @@ function spotifyPlaylistOrAlbum(id, type, author) {
                         });
 
                     }, function (err) {
-                        console.log('Something went wrong!', err);
+                        console.log("[" + new Date().toISOString() + "]", 'Something went wrong!', err);
                     });
                 } else if (type == 'album') {
                     spotifyApi.getAlbumTracks(id, {
@@ -942,7 +942,7 @@ function spotifyPlaylistOrAlbum(id, type, author) {
                         offset: 0
                     })
                         .then(function (data) {
-                            //console.log(data.body.items);
+                            //console.log("["+new Date().toISOString()+"]", data.body.items);
                             data.body.items.forEach(function (item, index) {
                                 if (item == null) return;
                                 var song_name = item.name;
@@ -962,23 +962,23 @@ function spotifyPlaylistOrAlbum(id, type, author) {
                                 add_to_queue(track, false, true);
                             });
                         }, function (err) {
-                            console.log('Something went wrong!', err);
+                            console.log("[" + new Date().toISOString() + "]", 'Something went wrong!', err);
                         });
 
                 } else {
-                    console.log('Not playlist or album');
+                    console.log("[" + new Date().toISOString() + "]", 'Not playlist or album');
                 }
             },
             function (err) {
-                console.log('Something went wrong when retrieving an access token', err);
+                console.log("[" + new Date().toISOString() + "]", 'Something went wrong when retrieving an access token', err);
             });
     } catch (err) {
-        console.log(err);
+        console.log("[" + new Date().toISOString() + "]", err);
     }
 }
 
 function add_to_queue(video, top, playlist) {
-    console.log("adding to queue " + video.URL);
+    console.log("[" + new Date().toISOString() + "]", "adding to queue " + video.URL);
     var position = queue.length;
     if (top == true) {
         if (queue.length > 0) {
@@ -1007,9 +1007,9 @@ function add_to_queue(video, top, playlist) {
     } else {
         queue.push(video)
     }
-    //console.log(queue.length);
+    //console.log("["+new Date().toISOString()+"]", queue.length);
     if (queue.length == 1) {
-        console.log('playMusic because only 1 in queue');
+        console.log("[" + new Date().toISOString() + "]", 'playMusic because only 1 in queue');
         playMusic();
         //no song playing so start playing
 
@@ -1020,12 +1020,12 @@ function add_to_queue(video, top, playlist) {
 async function playMusic() {
     if (queue.length == 0) return;
     //updateConfig();
-    // console.log(queue[0]);
+    // console.log("["+new Date().toISOString()+"]", queue[0]);
     //This means that it is a spotify song in the queue
     if (queue[0].THUMBNAIL == 'https://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png') {
 
         var video = null;
-        // console.log(`${queue[0].TITLE} is the spotify name`);
+        // console.log("["+new Date().toISOString()+"]", `${queue[0].TITLE} is the spotify name`);
         try {
             const filters = await ytsr.getFilters(queue[0].TITLE);
             const filter = filters.get('Type').get('Video');
@@ -1034,7 +1034,7 @@ async function playMusic() {
                 nextpageRef: filter.ref,
             }
             const searchResults = await ytsr(queue[0].TITLE, options);
-            // console.log(searchResults)
+            // console.log("["+new Date().toISOString()+"]", searchResults)
 
             const videos = searchResults.items;
             for (var i = 0; i < videos.length; i++) { //Checks if the duration of the video is greater than 0 to avoid live videos.
@@ -1044,7 +1044,7 @@ async function playMusic() {
                 }
             }
             if (video == null) {
-                console.log('No video found.');
+                console.log("[" + new Date().toISOString() + "]", 'No video found.');
                 // fs.appendFileSync('./console.txt', 'No Video found' + '\n');
                 throw new Error("No video found")
             }
@@ -1096,7 +1096,7 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
     const streamOptions = {
         seek: 0
     }; //, volume: volume};
-    console.log(url);
+    console.log("[" + new Date().toISOString() + "]", url);
     musicStream = ytdl(url, {
         filter: 'audioonly'
     });
@@ -1109,7 +1109,7 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
         pause = false;
         /*
         dispatcher.on('end', () => {
-            console.log('dispatcher end 1')
+            console.log("["+new Date().toISOString()+"]", 'dispatcher end 1')
             if (repeat == false) {
                 queue.shift();
             }
@@ -1120,10 +1120,10 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
 
             if (pause == true) return;
             if (speaking == 1) return; //still speaking
-            // console.log(speaking);
-            console.log('dispatcher end 1')
+            // console.log("["+new Date().toISOString()+"]", speaking);
+            console.log("[" + new Date().toISOString() + "]", 'dispatcher end 1')
             if (repeat == false) {
-                // console.log('no repeat so shift queue. 2');
+                // console.log("["+new Date().toISOString()+"]", 'no repeat so shift queue. 2');
 
                 queue.shift();
             }
@@ -1138,9 +1138,9 @@ function createStream(url) { //NEEDS FIXING. client.voiceConnections.length is N
             dispatcher.on('speaking', (speaking) => { //when finished speaking, play next song because that means songs over
                 if (pause == true) return;
                 if (speaking == 1) return; //still speaking
-                console.log('dispatcher end 2')
+                console.log("[" + new Date().toISOString() + "]", 'dispatcher end 2')
                 if (repeat == false) {
-                    console.log('no repeat so shift queue. 3');
+                    console.log("[" + new Date().toISOString() + "]", 'no repeat so shift queue. 3');
 
                     queue.shift();
                 }
@@ -1188,10 +1188,10 @@ function start(member) {
 
 
 function follow(member) {
-    console.log(`Following ${member.user.username}`)
+    console.log("[" + new Date().toISOString() + "]", `Following ${member.user.username}`)
     if (!member || !member.voice.channel) {
-        console.log("Error: voice channel doesnt exists");
-        //console.log('yes')
+        console.log("[" + new Date().toISOString() + "]", "Error: voice channel doesnt exists");
+        //console.log("["+new Date().toISOString()+"]", 'yes')
         //return;
     }
 
@@ -1203,7 +1203,7 @@ function follow(member) {
                 volume: '.001'
             });
 
-            console.log("Recording...");
+            console.log("[" + new Date().toISOString() + "]", "Recording...");
 
             voiceConnections.set(member.voice.channelID, voiceConnection);
             let voiceReceiver = voiceConnection.receiver;
@@ -1255,14 +1255,14 @@ function follow(member) {
 
                                     });
                                     py.stdout.on('end', function () {
-                                        //console.log(dataString);
+                                        //console.log("["+new Date().toISOString()+"]", dataString);
 
                                         dataString = dataString.trim().toLowerCase();
                                         if (dataString.length == 0) return;
                                         var timenow = Date.now();
                                         voiceRecognitionTotalTime += (timenow - initialTime);
                                         voiceRecognitionInstances++;
-                                        console.log(`${dataString.toString()} ${user.username} ` + (timenow - initialTime) + `ms.`);
+                                        console.log("[" + new Date().toISOString() + "]", `${dataString.toString()} ${user.username} ` + (timenow - initialTime) + `ms.`);
 
 
                                         if (dataString.split(" ").length >= 2) {
@@ -1302,28 +1302,28 @@ function follow(member) {
 
 
                             } catch (err) {
-                                //console.log(err);
+                                //console.log("["+new Date().toISOString()+"]", err);
                             }
                         });
 
                     }
                 } catch (err) {
-                    console.log(err);
+                    console.log("[" + new Date().toISOString() + "]", err);
                     if (err.message.indexOf("Couldn't resolve the user") != -1) {
                         voiceReceiver = voiceConnection.receiver;
                     }
-                    console.log("Error: Error in converting file")
+                    console.log("[" + new Date().toISOString() + "]", "Error: Error in converting file")
                 }
             });
         } catch (err) {
-            console.log(err);
-            console.log("Error: Error in 1")
+            console.log("[" + new Date().toISOString() + "]", err);
+            console.log("[" + new Date().toISOString() + "]", "Error: Error in 1")
         }
 
 
     }).catch(err => {
-        console.log(err);
-        console.log("Error: Error in joining channel or listening.")
+        console.log("[" + new Date().toISOString() + "]", err);
+        console.log("[" + new Date().toISOString() + "]", "Error: Error in joining channel or listening.")
     });
 }
 
@@ -1347,7 +1347,7 @@ function voiceCommandHandler(author, rawString) {
                 if (contents.trim() != '') {
                     var genre = contents.trim();
                     getSpotifyList().then(function (genreList) {
-                        console.log(genreList);
+                        console.log("[" + new Date().toISOString() + "]", genreList);
                         var names = [];
                         for (item of genreList.fields) {
                             names.push(item.name);
@@ -1355,15 +1355,15 @@ function voiceCommandHandler(author, rawString) {
 
                         var matches = stringSimilarity.findBestMatch(genre, names);
                         if (matches.bestMatch.rating < .7) {
-                            console.log("None close found")
+                            console.log("[" + new Date().toISOString() + "]", "None close found")
                         } else {
-                            //console.log(matches.bestMatchIndex + ":" + matches.bestMatch.target);
+                            //console.log("["+new Date().toISOString()+"]", matches.bestMatchIndex + ":" + matches.bestMatch.target);
                             spotifyGenreList(textChannel, (matches.bestMatchIndex + 1) + " 1", author);
                         }
                     });
                 }
             } else {
-                console.log("spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.");
+                console.log("[" + new Date().toISOString() + "]", "spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.");
             }
 
             break;
@@ -1380,25 +1380,25 @@ function voiceCommandHandler(author, rawString) {
         case "kip":
         case "skit":
             textChannel.send("`Song skipped.`")
-            console.log('Song skipped.');
+            console.log("[" + new Date().toISOString() + "]", 'Song skipped.');
             song_skip();
             break;
         case "clear":
         case "cleared":
         case "clair":
             textChannel.send("`Queue cleared.`")
-            console.log('Queue cleared.');
+            console.log("[" + new Date().toISOString() + "]", 'Queue cleared.');
             song_clear();
             break;
         case "resume":
         case "continue":
         case "unpause":
             textChannel.send("`Song resumed.`")
-            console.log('Song resumed.');
+            console.log("[" + new Date().toISOString() + "]", 'Song resumed.');
             song_resume();
             break;
         case "shuffle":
-            console.log('Queue shuffled.');
+            console.log("[" + new Date().toISOString() + "]", 'Queue shuffled.');
             song_shuffle(textChannel);
             break;
         case "queue":
@@ -1438,7 +1438,7 @@ function stop(member) {
         return;
     }
 
-    console.log("Stopping...");
+    console.log("[" + new Date().toISOString() + "]", "Stopping...");
     queue = [];
     if (dispatcher) {
         dispatcher.end();
@@ -1487,11 +1487,11 @@ async function initializeSpotifyAPI() {
             });
             return true;
         } catch (err) {
-            console.log("Error connecting spotify API. Potentially incorrect spotifyClientID or spotifyClientSecret")
+            console.log("[" + new Date().toISOString() + "]", "Error connecting spotify API. Potentially incorrect spotifyClientID or spotifyClientSecret")
             return false;
         }
     } else {
-        console.log("spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.")
+        console.log("[" + new Date().toISOString() + "]", "spotifyClientID or spotifyClientSecret missing. Will not be able to use spotify functionality.")
         return false;
     }
 }

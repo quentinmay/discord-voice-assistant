@@ -26,7 +26,7 @@ var spotifyApi;
 var musicStream;
 var pause = false;
 
-var python = "python";
+var python = "python3";
 
 var queue = [];
 var dispatcher;
